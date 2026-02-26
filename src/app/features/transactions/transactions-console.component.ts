@@ -1,5 +1,5 @@
 import { CurrencyPipe, DatePipe, JsonPipe, NgClass, TitleCasePipe } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
 import {
   DateSortOrder,
   TransactionFilterStatus,
@@ -16,9 +16,20 @@ interface SelectOption<TValue extends string> {
   selector: 'app-transactions-console',
   imports: [CurrencyPipe, DatePipe, JsonPipe, NgClass, TitleCasePipe],
   templateUrl: './transactions-console.component.html',
-  styleUrl: './transactions-console.component.scss'
+  styleUrl: './transactions-console.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TransactionsConsoleComponent {
+
+
+  constructor() {
+
+    effect(() => {
+      console.log(this.listState(), 123);
+    })
+  }
+
+
   protected readonly store = inject(TransactionsConsoleStore);
 
   protected readonly statusOptions: ReadonlyArray<SelectOption<TransactionFilterStatus>> = [

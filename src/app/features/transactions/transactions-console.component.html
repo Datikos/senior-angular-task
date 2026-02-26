@@ -55,7 +55,7 @@
       </header>
 
       @if (listState().error; as listError) {
-        <p class="error-banner">{{ listError }}</p>
+        <p class="error-banner">{{ listError | json}}</p>
       }
 
       @if (listState().loading) {
