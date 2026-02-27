@@ -1,183 +1,197 @@
-<div class="console-shell">
-  <header class="console-header">
-    <div>
-      <h1>Payment Operations Console (Interview Starter)</h1>
-      <p>Mock backend is active: 400-1200ms latency with intermittent errors.</p>
-    </div>
+@if (details() && transactions()) {
+  <h2>
+    {{ detailId$ | async }}
+  </h2>
 
-    <div class="stats">
-      <span>Total: {{ listState().data.length }}</span>
-      <span>Failed: {{ failedCount() }}</span>
-    </div>
-  </header>
-
-  <section class="filters" aria-label="Transaction controls">
-    <label>
-      Status
-      <select [value]="store.statusFilter()" (change)="onStatusChange($any($event.target).value)">
-        @for (option of statusOptions; track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
-        }
-      </select>
-    </label>
-
-    <label class="search-field">
-      Search
-      <input
-        type="search"
-        placeholder="ID, reference, customer"
-        [value]="store.searchTerm()"
-        (input)="onSearchChange($any($event.target).value)"
-      />
-      <small>Debounced: 300ms</small>
-    </label>
-
-    <label>
-      Sort by date
-      <select [value]="store.sortOrder()" (change)="onSortChange($any($event.target).value)">
-        @for (option of sortOptions; track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
-        }
-      </select>
-    </label>
-  </section>
-
-  <p class="todo-note">
-    Starter mode: controls currently update local state only. Implement reactive list/details
-    request orchestration in the store.
-  </p>
-
-  <div class="content-grid">
-    <section class="panel">
-      <header class="panel-header">
-        <h2>Transactions</h2>
-        <button type="button" class="ghost" (click)="store.retryList()">Retry list</button>
-      </header>
-
-      @if (listState().error; as listError) {
-        <p class="error-banner">{{ listError }}</p>
-      }
-
-      @if (listState().loading) {
-        <p class="info-state">Loading transactions...</p>
-      }
-
-      @if (!listState().loading && listState().data.length === 0) {
-        <p class="info-state">
-          No transactions loaded yet. Implement list orchestration in the store.
-        </p>
-      }
-
-      <div class="rows" role="listbox" [attr.aria-busy]="listState().loading">
-        @for (transaction of listState().data; track transaction.id) {
-          <button
-            type="button"
-            class="row"
-            [class.row--selected]="transaction.id === selectedId()"
-            (click)="store.selectTransaction(transaction.id)"
-          >
-            <span>
-              <strong>{{ transaction.reference }}</strong>
-              <small>{{ transaction.customerEmail }}</small>
-            </span>
-
-            <span>{{ transaction.amount | currency: transaction.currency : 'symbol' : '1.2-2' }}</span>
-            <span>{{ transaction.createdAt | date: 'MMM d, HH:mm:ss' }}</span>
-
-            <span class="status" [ngClass]="statusClass(transaction.status)">
-              @switch (transaction.status) {
-                @case ('failed') {
-                  Failed
-                }
-                @case ('pending') {
-                  Pending
-                }
-                @case ('success') {
-                  Success
-                }
-              }
-            </span>
-          </button>
-        }
+  <div class="console-shell">
+    <header class="console-header">
+      <div>
+        <h1>Payment Operations Console (Interview Starter)</h1>
+        <p>Mock backend is active: 400-1200ms latency with intermittent errors.</p>
       </div>
+
+      <div class="stats">
+        <span>Total: {{ listState().data.length }}</span>
+        <span>Failed: {{ failedCount() }}</span>
+      </div>
+    </header>
+
+    <section class="filters" aria-label="Transaction controls">
+      <label>
+        Status
+        <select [value]="store.statusFilter()" (change)="onStatusChange($any($event.target).value)">
+          @for (option of statusOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="search-field">
+        Search
+        <input
+          type="search"
+          placeholder="ID, reference, customer"
+          [value]="store.searchTerm()"
+          (input)="onSearchChange($any($event.target).value)"
+        />
+        <small>Debounced: 300ms</small>
+      </label>
+
+      <label>
+        Sort by date
+        <select [value]="store.sortOrder()" (change)="onSortChange($any($event.target).value)">
+          @for (option of sortOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
     </section>
 
-    <section class="panel">
-      <header class="panel-header">
-        <h2>Details</h2>
-        @if (selectedId()) {
-          <button type="button" class="ghost" (click)="store.clearSelection()">Clear</button>
+    <p class="todo-note">
+      Starter mode: controls currently update local state only. Implement reactive list/details
+      request orchestration in the store.
+    </p>
+
+    <div class="content-grid">
+      <section class="panel">
+        <header class="panel-header">
+          <h2>Transactions</h2>
+          <button type="button" class="ghost" (click)="store.retryList()">Retry list</button>
+        </header>
+
+        @if (listState().error; as listError) {
+          <p class="error-banner">{{ listError }}</p>
         }
-      </header>
 
-      @if (!selectedId()) {
-        <p class="info-state">Select a transaction row to inspect details.</p>
-      }
+        @if (listState().loading) {
+          <p class="info-state">Loading transactions...</p>
+        }
 
-      @if (selectedId()) {
-        @if (!detailsState().loading && !detailsState().error && !detailsState().data) {
+        @if (!listState().loading && listState().data.length === 0) {
           <p class="info-state">
-            Details loading is intentionally left as TODO for the interview task.
+            No transactions loaded yet. Implement list orchestration in the store.
           </p>
         }
 
-        @if (detailsState().error; as detailsError) {
-          <div class="error-banner with-action">
-            <span>{{ detailsError }}</span>
-            <button type="button" class="ghost" (click)="store.retryDetails()">Retry details</button>
-          </div>
+        <div class="rows" role="listbox" [attr.aria-busy]="listState().loading">
+          @for (transaction of listState().data; track transaction.id) {
+            <button
+              type="button"
+              class="row"
+              [class.row--selected]="transaction.id === selectedId()"
+              (click)="store.selectTransaction(transaction.id)"
+            >
+              <span>
+                <strong>{{ transaction.reference }}</strong>
+                <small>{{ transaction.customerEmail }}</small>
+              </span>
+
+              <span>{{
+                transaction.amount | currency: transaction.currency : 'symbol' : '1.2-2'
+              }}</span>
+              <span>{{ transaction.createdAt | date: 'MMM d, HH:mm:ss' }}</span>
+
+              <span class="status" [ngClass]="statusClass(transaction.status)">
+                @switch (transaction.status) {
+                  @case ('failed') {
+                    Failed
+                  }
+                  @case ('pending') {
+                    Pending
+                  }
+                  @case ('success') {
+                    Success
+                  }
+                }
+              </span>
+            </button>
+          }
+        </div>
+      </section>
+
+      <section class="panel">
+        <header class="panel-header">
+          <h2>Details</h2>
+          @if (selectedId()) {
+            <button type="button" class="ghost" (click)="store.clearSelection()">Clear</button>
+          }
+        </header>
+
+        @if (!selectedId()) {
+          <p class="info-state">Select a transaction row to inspect details.</p>
         }
 
-        @if (detailsState().loading) {
-          <p class="info-state">Loading details...</p>
+        @if (selectedId()) {
+          @if (!detailsState().loading && !detailsState().error && !detailsState().data) {
+            <p class="info-state">
+              Details loading is intentionally left as TODO for the interview task.
+            </p>
+          }
+
+          @if (detailsState().error; as detailsError) {
+            <div class="error-banner with-action">
+              <span>{{ detailsError }}</span>
+              <button type="button" class="ghost" (click)="store.retryDetails()">
+                Retry details
+              </button>
+            </div>
+          }
+
+          @if (detailsState().loading) {
+            <p class="info-state">Loading details...</p>
+          }
+
+          @if (detailsState().data; as details) {
+            <dl class="details-grid">
+              <dt>Transaction ID</dt>
+              <dd>
+                <code>{{ details.id }}</code>
+              </dd>
+
+              <dt>Status</dt>
+              <dd>
+                @switch (details.status) {
+                  @case ('failed') {
+                    Failed
+                  }
+                  @case ('pending') {
+                    Pending
+                  }
+                  @case ('success') {
+                    Success
+                  }
+                }
+              </dd>
+
+              <dt>Reference</dt>
+              <dd>{{ details.reference }}</dd>
+
+              <dt>Created At</dt>
+              <dd>{{ details.createdAt | date: 'full' }}</dd>
+
+              <dt>Amount</dt>
+              <dd>{{ details.amount | currency: details.currency : 'symbol' : '1.2-2' }}</dd>
+
+              <dt>Payment Method</dt>
+              <dd>{{ details.paymentMethod | titlecase }}</dd>
+
+              <dt>Gateway Trace</dt>
+              <dd>
+                <code>{{ details.gatewayTraceId }}</code>
+              </dd>
+
+              <dt>Failure Code</dt>
+              <dd>{{ details.failureCode ?? 'N/A' }}</dd>
+
+              <dt>Failure Reason</dt>
+              <dd>{{ details.failureReason ?? 'N/A' }}</dd>
+            </dl>
+
+            <h3>Raw Payload</h3>
+            <pre>{{ details.rawPayload | json }}</pre>
+          }
         }
-
-        @if (detailsState().data; as details) {
-          <dl class="details-grid">
-            <dt>Transaction ID</dt>
-            <dd><code>{{ details.id }}</code></dd>
-
-            <dt>Status</dt>
-            <dd>
-              @switch (details.status) {
-                @case ('failed') {
-                  Failed
-                }
-                @case ('pending') {
-                  Pending
-                }
-                @case ('success') {
-                  Success
-                }
-              }
-            </dd>
-
-            <dt>Reference</dt>
-            <dd>{{ details.reference }}</dd>
-
-            <dt>Created At</dt>
-            <dd>{{ details.createdAt | date: 'full' }}</dd>
-
-            <dt>Amount</dt>
-            <dd>{{ details.amount | currency: details.currency : 'symbol' : '1.2-2' }}</dd>
-
-            <dt>Payment Method</dt>
-            <dd>{{ details.paymentMethod | titlecase }}</dd>
-
-            <dt>Gateway Trace</dt>
-            <dd><code>{{ details.gatewayTraceId }}</code></dd>
-
-            <dt>Failure Code</dt>
-            <dd>{{ details.failureCode ?? 'N/A' }}</dd>
-
-            <dt>Failure Reason</dt>
-            <dd>{{ details.failureReason ?? 'N/A' }}</dd>
-          </dl>
-
-          <h3>Raw Payload</h3>
-          <pre>{{ details.rawPayload | json }}</pre>
-        }
-      }
-    </section>
+      </section>
+    </div>
   </div>
-</div>
+}

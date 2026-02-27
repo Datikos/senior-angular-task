@@ -3,8 +3,10 @@ import {
   DateSortOrder,
   TransactionDetails,
   TransactionFilterStatus,
-  TransactionSummary
+  TransactionsQuery,
+  TransactionSummary,
 } from '../../core/transactions/transactions.model';
+import { Subject } from 'rxjs';
 
 interface AsyncState<T> {
   data: T;
@@ -19,20 +21,29 @@ export class TransactionsConsoleStore {
   readonly sortOrder = signal<DateSortOrder>('newest');
   readonly selectedTransactionId = signal<string | null>(null);
 
+  retryList$ = new Subject<void>();
+  retryDetails$ = new Subject<void>();
+
+  readonly query = computed<TransactionsQuery>(() => ({
+    status: this.statusFilter(),
+    search: this.searchTerm(),
+    sort: this.sortOrder(),
+  }));
+
   readonly listState = signal<AsyncState<TransactionSummary[]>>({
     data: [],
     loading: false,
-    error: null
+    error: null,
   });
 
   readonly detailsState = signal<AsyncState<TransactionDetails | null>>({
     data: null,
     loading: false,
-    error: null
+    error: null,
   });
 
   readonly failedCount = computed(
-    () => this.listState().data.filter((transaction) => transaction.status === 'failed').length
+    () => this.listState().data.filter((transaction) => transaction.status === 'failed').length,
   );
 
   constructor() {
@@ -68,10 +79,11 @@ export class TransactionsConsoleStore {
   }
 
   retryList(): void {
+    this.retryList$.next();
     // TODO(interview): trigger list retry.
   }
 
   retryDetails(): void {
-    // TODO(interview): trigger details retry for currently selected row.
+    this.retryDetails$.next();
   }
 }
